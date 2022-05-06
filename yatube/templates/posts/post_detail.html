@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+  Post {{ post.text | truncatechars:30 }}
+{% endblock %}
+{% block content %}
+{% load user_filters %}
+<div class="row">
+  <aside class="col-12 col-md-3">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Publication date: {{ post.pub_date|date:"d E Y" }} 
+      </li>
+      {% if post.group is not None %}
+        <li class="list-group-item">
+        Group: {{ post.group }}
+        <a href="{% url 'posts:group_list' post.group.slug %}">
+          All group posts
+        </a>
+        </li>
+      {% endif %}  
+      <li class="list-group-item">
+        Author: {{ author.get_full_name }}
+      </li>
+      <li class="list-group-item">
+        <a href="{% url 'posts:profile' post.author %}">
+          All author's posts
+        </a>
+      </li>
+    </ul>
+  </aside>
+  <article class="col-12 col-md-9">
+    {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}
+    <p>
+      {{ post.text }}
+    </p>
+    {% if user == post.author %}
+      <a href="{% url 'posts:post_edit' post.pk %}">
+        <button type="submit" class="btn btn-primary">
+          Edit post
+        </button>
+      </a>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <div class="card my-4">
+        <h5 class="card-header">Add comment:</h5>
+        <div class="card-body">
+          <form method="post" action="{% url 'posts:add_comment' post.id %}">
+            {% csrf_token %}      
+            <div class="form-group mb-2">
+              {{ form.text|addclass:"form-control" }}
+            </div>
+            <button type="submit" class="btn btn-primary">Send</button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+    {% for comment in comments %}
+      <div class="media mb-4">
+        <div class="media-body">
+          <h5 class="mt-0">
+            <a href="{% url 'posts:profile' comment.author.username %}">
+              {{ comment.author.username }}
+            </a>
+          </h5>
+            <p>
+            {{ comment.text }}
+            </p>
+          </div>
+        </div>
+    {% endfor %}
+  </article>
+</div>
+{% endblock %}

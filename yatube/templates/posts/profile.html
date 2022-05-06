@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}
+  All {{ author.get_full_name }}'s posts
+{% endblock %}
+{% block content %}
+  <div class="mb-5">
+    <h1>All {{ author.get_full_name }}'s posts</h1>
+    <h3>Posts total - {{ count }}</h3>
+    {% if user.is_authenticated %}
+      {% if user != author%}
+        {% if following %}
+          <a
+            class="btn btn-lg btn-light"
+            href="{% url 'posts:profile_unfollow' author.username %}" role="button"
+          >
+            Unfollow
+          </a>
+        {% else %}
+          <a
+            class="btn btn-lg btn-primary"
+            href="{% url 'posts:profile_follow' author.username %}" role="button"
+          >
+            Follow
+          </a>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    <hr>
+  </div>
+  {% for post in page_obj %}
+    {% include 'posts/includes/post.html' %}
+    {% if post.group %}   
+      <a href="{% url 'posts:group_list' post.group.slug %}">All group posts</a>
+    {% endif %}
+    {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
+  {% include 'posts/includes/paginator.html' %}
+{% endblock %}
