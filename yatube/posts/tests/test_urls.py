@@ -60,6 +60,7 @@ class PostUrlsTests(TestCase):
                 'posts:post_edit',
                 kwargs={'post_id': self.post.id}
             )),
+            ('/follow/', reverse('posts:follow_index')),
         ]
         for url, expected in pages_urls:
             with self.subTest(url=url):
@@ -101,6 +102,8 @@ class PostUrlsTests(TestCase):
                 'posts:post_edit',
                 kwargs={'post_id': self.post.id}
             ), 302, AuthorizeRoles.READER),
+            (reverse('posts:follow_index'), 200, AuthorizeRoles.READER),
+            (reverse('posts:follow_index'), 302, AuthorizeRoles.GUEST),
         ]
         for address, code, auth in page_list:
             with self.subTest():

@@ -1,10 +1,12 @@
+from xml.etree.ElementTree import Comment
+from django.db.models import Prefetch
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, User, Follow
+from .models import Comment, Group, Post, User, Follow
 
 
 def index(request):
@@ -38,16 +40,12 @@ def profile(request, username):
     paginator = Paginator(user_posts, settings.PAGINATOR_AMOUNT)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    count = paginator.count
-    if request.user.is_authenticated:
-        if Follow.objects.filter(user=request.user, author=author).exists():
-            following = True
-        else:
-            following = False
-    else:
-        following = False
+    following = False
+    if (request.user.is_authenticated
+       and author.following.filter(user=request.user).exists()):
+        following = True
     context = {
-        'count': count,
+        'count': paginator.count,
         'author': author,
         'page_obj': page_obj,
         'following': following,
@@ -56,14 +54,17 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post.objects.select_related('author', 'group'),
-                             pk=post_id)
-    author = post.author
-    form = CommentForm(request.POST or None)
-    comments = post.comments.select_related('post', 'author')
+    post = get_object_or_404(
+        Post.objects.select_related('author', 'group')
+        .prefetch_related(Prefetch(
+            'comments',
+            queryset=Comment.objects.all())),
+        pk=post_id
+    )
+    comments = post.comments.all()
+    form = CommentForm()
     context = {
         'post': post,
-        'author': author,
         'form': form,
         'comments': comments,
     }
@@ -111,7 +112,7 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post.objects.select_related('author'), pk=post_id)
+    post = get_object_or_404(Post.objects.all(), pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -138,9 +139,7 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if (request.user != author
-        and Follow.objects.filter(
-            user=request.user,
-            author=author).exists() is not True):
+       and not author.following.filter(user=request.user).exists()):
         Follow.objects.create(user=request.user, author=author)
     return redirect('posts:profile', username=author.username)
 

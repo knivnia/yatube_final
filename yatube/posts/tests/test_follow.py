@@ -28,8 +28,8 @@ class FollowViewsTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
 
-    def test_follow_and_unfollow(self):
-        """Check if user can follow and unfollow other user."""
+    def test_follow(self):
+        """Check if user can follow other user."""
         self.authorized_client.force_login(self.follower)
         self.authorized_client.post(
             reverse(
@@ -43,6 +43,18 @@ class FollowViewsTests(TestCase):
             user=self.follower,
             author=self.author
         ).exists()
+        )
+
+    def test_unfollow(self):
+        """Check if user can unfollow other user."""
+        self.authorized_client.force_login(self.follower)
+        self.authorized_client.post(
+            reverse(
+                'posts:profile_follow',
+                kwargs={
+                    'username': self.author,
+                }
+            )
         )
         self.authorized_client.post(
             reverse(

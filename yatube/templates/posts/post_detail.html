@@ -20,7 +20,7 @@
         </li>
       {% endif %}  
       <li class="list-group-item">
-        Author: {{ author.get_full_name }}
+        Author: {{ post.author.get_full_name }}
       </li>
       <li class="list-group-item">
         <a href="{% url 'posts:profile' post.author %}">

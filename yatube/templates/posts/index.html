@@ -7,7 +7,7 @@
   <hr>
   {% include 'posts/includes/switcher.html' %}
   {% load cache %}
-  {% cache 20 index_page with page_obj %}
+  {% cache 20 index_page page_obj%}
   {% for post in page_obj %}
     {% include 'posts/includes/post.html' %}
     <p>

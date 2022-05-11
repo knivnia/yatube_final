@@ -138,11 +138,19 @@ class PostViewsTests(TestCase):
     # test for cache
     def test_cache_on_main_page(self):
         """Posts saved in cache on main page."""
-        response = self.authorized_client.get(
+        response_initial = self.authorized_client.get(
             reverse('posts:main_page')
         )
-        post_count = len(response.context['page_obj'])
         Post.objects.get(id=self.post.id).delete()
-        self.assertEqual(post_count, len(response.context['page_obj']))
+        response_from_cache = self.authorized_client.get(
+            reverse('posts:main_page')
+        )
+        self.assertEqual(response_initial.content, response_from_cache.content)
         cache.clear()
-        self.assertFalse(Post.objects.filter(id=self.post.id).exists())
+        response_clear = self.authorized_client.get(
+            reverse('posts:main_page')
+        )
+        self.assertNotEqual(
+            response_from_cache.content,
+            response_clear.content
+        )
