@@ -1,4 +1,3 @@
-from xml.etree.ElementTree import Comment
 from django.db.models import Prefetch
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -40,10 +39,8 @@ def profile(request, username):
     paginator = Paginator(user_posts, settings.PAGINATOR_AMOUNT)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    following = False
-    if (request.user.is_authenticated
-       and author.following.filter(user=request.user).exists()):
-        following = True
+    following = (request.user.is_authenticated
+                 and author.following.filter(user=request.user).exists())
     context = {
         'count': paginator.count,
         'author': author,
@@ -58,15 +55,13 @@ def post_detail(request, post_id):
         Post.objects.select_related('author', 'group')
         .prefetch_related(Prefetch(
             'comments',
-            queryset=Comment.objects.all())),
+            queryset=Comment.objects.select_related('author'))),
         pk=post_id
     )
-    comments = post.comments.all()
     form = CommentForm()
     context = {
         'post': post,
         'form': form,
-        'comments': comments,
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -112,7 +107,7 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post.objects.all(), pk=post_id)
+    post = get_object_or_404(Post.objects.filter(pk=post_id))
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)

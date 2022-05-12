@@ -84,6 +84,9 @@ class Comment(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        ordering = ('created',)
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
