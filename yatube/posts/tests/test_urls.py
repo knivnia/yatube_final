@@ -139,7 +139,7 @@ class PostUrlsTests(TestCase):
                 'posts:post_edit',
                 kwargs={'post_id': self.post.id}
             ), 'posts/create_post.html'),
-            ('/unexisting_page/', 'core/404.html'),  # added in sprint6
+            ('/unexisting_page/', 'core/404.html'),
         ]
         for url, template in templates_pages_names:
             with self.subTest(url=url):
