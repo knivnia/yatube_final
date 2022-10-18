@@ -1,4 +1,4 @@
-# Yatube API
+# Yatube
 
 ### Yatube - Social network
 
