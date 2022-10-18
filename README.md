@@ -54,4 +54,4 @@ python manage.py runserver
 ### Author
 Kseniia Nivnia
 
-September 2022
+May 2022
